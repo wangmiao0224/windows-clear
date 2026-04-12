@@ -6,6 +6,16 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-green)
 ![Windows](https://img.shields.io/badge/OS-Windows%2010%2F11-blue)
 
+## 截图预览
+
+| 系统设置 | 系统修复 |
+|:---:|:---:|
+| ![系统设置](screenshots/settings.png) | ![系统修复](screenshots/cleanup.png) |
+
+| 性能监控 | 开机自启管理 |
+|:---:|:---:|
+| ![性能监控](screenshots/monitor.png) | ![开机自启管理](screenshots/startup.png) |
+
 ## 功能特性
 
 ### 🔧 系统设置（27 项）

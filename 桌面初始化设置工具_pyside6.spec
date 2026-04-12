@@ -2,7 +2,7 @@
 
 from PyInstaller.utils.hooks import collect_data_files
 
-datas = [('config.json', '.')]
+datas = [('config.json', '.'), ('ui/check.svg', 'ui')]
 
 a = Analysis(
     ['main.py'],
