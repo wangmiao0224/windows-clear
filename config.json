@@ -1,0 +1,293 @@
+{
+  "apps": [
+    {
+      "name": "Google Chrome",
+      "winget_id": "Google.Chrome",
+      "category": "浏览器",
+      "icon": "🌐",
+      "description": "谷歌浏览器",
+      "download_url": "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi",
+      "silent_args": "/quiet /norestart",
+      "installer_type": "msi"
+    },
+    {
+      "name": "QQ浏览器",
+      "winget_id": "Tencent.QQBrowser",
+      "category": "浏览器",
+      "icon": "🌐",
+      "description": "QQ浏览器",
+      "download_url": "https://dldir1v6.qq.com/invc/tt/QQBrowser_Setup.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "微信",
+      "winget_id": "Tencent.WeChat",
+      "category": "社交",
+      "icon": "💬",
+      "description": "微信桌面版",
+      "download_url": "https://dldir1.qq.com/weixin/Windows/WeChatSetup.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "QQ",
+      "winget_id": "Tencent.QQ",
+      "category": "社交",
+      "icon": "🐧",
+      "description": "QQ桌面版",
+      "download_url": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Windows/QQ_9.9.29_260401_x64_01.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "WPS Office",
+      "winget_id": "Kingsoft.WPSOffice",
+      "category": "办公",
+      "icon": "📄",
+      "description": "WPS办公套件",
+      "download_url": "https://official-package.wpscdn.cn/wps/download/WPS_Setup.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "WinRAR",
+      "winget_id": "RARLab.WinRAR",
+      "category": "工具",
+      "icon": "📦",
+      "description": "RAR解压缩工具",
+      "download_url": "https://www.win-rar.com/fileadmin/winrar-versions/winrar/winrar-x64-710.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "7-Zip",
+      "winget_id": "7zip.7zip",
+      "category": "工具",
+      "icon": "📦",
+      "description": "7-Zip压缩工具",
+      "download_url": "https://www.7-zip.org/a/7z2600-x64.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "QQ音乐",
+      "winget_id": "Tencent.QQMusic",
+      "category": "娱乐",
+      "icon": "🎵",
+      "description": "QQ音乐播放器",
+      "download_url": "https://dldir1.qq.com/music/clntupate/QQMusic_Setup.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "网易云音乐",
+      "winget_id": "NetEase.CloudMusic",
+      "category": "娱乐",
+      "icon": "🎵",
+      "description": "网易云音乐",
+      "download_url": "",
+      "website": "https://music.163.com/#/download",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "腾讯视频",
+      "winget_id": "Tencent.TencentVideo",
+      "category": "娱乐",
+      "icon": "📺",
+      "description": "腾讯视频客户端",
+      "download_url": "https://dldir1.qq.com/qqtv/TencentVideo11.162.7621.0.exe?support_redirect=1",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "WeGame",
+      "winget_id": "Tencent.WeGame",
+      "category": "游戏",
+      "icon": "🎮",
+      "description": "腾讯游戏平台",
+      "download_url": "",
+      "website": "https://www.wegame.com.cn/",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    },
+    {
+      "name": "Steam",
+      "winget_id": "Valve.Steam",
+      "category": "游戏",
+      "icon": "🎮",
+      "description": "Steam游戏平台",
+      "download_url": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+      "silent_args": "/S",
+      "installer_type": "exe"
+    }
+  ],
+  "settings": [
+    {
+      "name": "关闭锁屏广告",
+      "key": "disable_lockscreen_ads",
+      "description": "禁用锁屏广告和推荐"
+    },
+    {
+      "name": "关闭任务栏广告",
+      "key": "disable_taskbar_ads",
+      "description": "禁用任务栏和开始菜单广告"
+    },
+    {
+      "name": "关闭系统通知",
+      "key": "disable_notifications",
+      "description": "关闭Windows系统通知弹窗"
+    },
+    {
+      "name": "关闭自动更新",
+      "key": "disable_auto_update",
+      "description": "停止Windows Update自动更新"
+    },
+    {
+      "name": "电源模式(高性能)",
+      "key": "set_high_performance",
+      "description": "设置电源计划为高性能模式"
+    },
+    {
+      "name": "显示文件扩展名",
+      "key": "show_file_extensions",
+      "description": "资源管理器显示已知文件扩展名"
+    },
+    {
+      "name": "显示隐藏文件",
+      "key": "show_hidden_files",
+      "description": "显示隐藏的文件和文件夹"
+    },
+    {
+      "name": "桌面显示此电脑",
+      "key": "show_my_computer",
+      "description": "在桌面上显示「此电脑」图标"
+    },
+    {
+      "name": "恢复经典右键菜单",
+      "key": "classic_context_menu",
+      "description": "Win11恢复完整右键菜单"
+    },
+    {
+      "name": "关闭搜索热点",
+      "key": "disable_search_highlights",
+      "description": "关闭搜索框中的热点新闻和高亮"
+    },
+    {
+      "name": "关闭Cortana",
+      "key": "disable_cortana",
+      "description": "禁用Cortana/Copilot减少资源占用"
+    },
+    {
+      "name": "关闭遥测跟踪",
+      "key": "disable_telemetry",
+      "description": "关闭Windows诊断数据和隐私跟踪"
+    },
+    {
+      "name": "关闭后台应用",
+      "key": "disable_background_apps",
+      "description": "禁止UWP应用后台运行"
+    },
+    {
+      "name": "卸载预装应用",
+      "key": "remove_bloatware",
+      "description": "删除Xbox/新闻/天气等预装应用"
+    },
+    {
+      "name": "优化视觉效果",
+      "key": "optimize_visual_effects",
+      "description": "关闭动画效果提升性能"
+    },
+    {
+      "name": "关闭SysMain",
+      "key": "disable_sysmain",
+      "description": "关闭Superfetch服务(SSD推荐)"
+    },
+    {
+      "name": "隐藏任务栏小组件",
+      "key": "hide_taskbar_widgets",
+      "description": "关闭天气/小组件面板"
+    },
+    {
+      "name": "隐藏搜索框",
+      "key": "hide_search_box",
+      "description": "隐藏任务栏搜索框"
+    },
+    {
+      "name": "关闭任务视图",
+      "key": "hide_task_view",
+      "description": "隐藏虚拟桌面按钮"
+    },
+    {
+      "name": "关闭Game Bar",
+      "key": "disable_game_bar",
+      "description": "关闭Xbox Game Bar和游戏模式"
+    },
+    {
+      "name": "关闭开机声音",
+      "key": "disable_startup_sound",
+      "description": "静默启动"
+    },
+    {
+      "name": "优化虚拟内存",
+      "key": "set_virtual_memory",
+      "description": "设置页面文件为系统自动管理"
+    },
+    {
+      "name": "修改保存位置",
+      "key": "change_save_location",
+      "description": "桌面/文档/下载等迁移到指定盘",
+      "requires_input": true,
+      "input_type": "folder"
+    },
+    {
+      "name": "设置屏幕刷新率",
+      "key": "set_refresh_rate",
+      "description": "设置显示器刷新率(Hz)",
+      "requires_input": true,
+      "input_type": "refresh_rate"
+    },
+    {
+      "name": "设置DNS",
+      "key": "set_dns",
+      "description": "设置首选/备用DNS服务器",
+      "requires_input": true,
+      "input_type": "dns"
+    },
+    {
+      "name": "任务栏对齐方式",
+      "key": "set_taskbar_alignment",
+      "description": "Win11任务栏居左或居中",
+      "requires_input": true,
+      "input_type": "taskbar_alignment"
+    },
+    {
+      "name": "屏幕休眠时间",
+      "key": "set_screen_timeout",
+      "description": "设置多久无操作后关闭屏幕",
+      "requires_input": true,
+      "input_type": "screen_timeout"
+    },
+    {
+      "name": "修改计算机名",
+      "key": "set_computer_name",
+      "description": "重命名此计算机（重启生效）",
+      "requires_input": true,
+      "input_type": "computer_name"
+    },
+    {
+      "name": "默认安装目录改到D盘",
+      "key": "set_default_install_dir",
+      "description": "新安装的程序将默认安装到D:\\Program Files"
+    }
+  ],
+  "save_location_folders": [
+    "Desktop",
+    "Documents",
+    "Downloads",
+    "Music",
+    "Pictures",
+    "Videos"
+  ]
+}

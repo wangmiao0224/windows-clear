@@ -1,0 +1,14 @@
+# 系统优化工具-专业版
+# 直接运行: python main.py
+
+# GUI 框架
+PySide6
+
+# 无头浏览器
+selenium
+
+# 系统信息采集
+psutil
+
+# 截图预览（可选）
+Pillow
