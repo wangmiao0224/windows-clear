@@ -141,8 +141,9 @@ class SettingsPage(QWidget):
 
         elif t == "screen_timeout":
             self._timeout_spin = QSpinBox()
-            self._timeout_spin.setRange(1, 120)
-            self._timeout_spin.setValue(15)
+            self._timeout_spin.setRange(0, 120)
+            self._timeout_spin.setValue(0)
+            self._timeout_spin.setSpecialValueText("永不")
             self._timeout_spin.setFixedWidth(80)
             row.addWidget(self._timeout_spin)
             row.addWidget(QLabel("分钟"))

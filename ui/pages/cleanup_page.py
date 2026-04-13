@@ -214,12 +214,13 @@ class CleanupPage(QWidget):
 
     # ── 系统修复 ──
 
-    def _run_cleanup(self):
+    def _run_cleanup(self, skip_confirm=False):
         keys = self._cleanup_group.selected_keys()
         if not keys:
-            QMessageBox.warning(self, "提示", "请至少选择一项")
+            if not skip_confirm:
+                QMessageBox.warning(self, "提示", "请至少选择一项")
             return
-        if QMessageBox.question(
+        if not skip_confirm and QMessageBox.question(
             self, "确认",
             f"执行 {len(keys)} 项系统修复？\n部分操作不可逆，建议先备份数据。",
         ) != QMessageBox.StandardButton.Yes:

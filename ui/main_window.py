@@ -177,12 +177,13 @@ class MainWindow(QMainWindow):
         return header
 
     def _one_click_optimize(self):
-        """一键执行: 系统设置 + 应用安装"""
+        """一键执行: 系统设置 + 系统修复 + Windows 激活"""
         reply = QMessageBox.question(
             self, "一键优化",
             "将自动执行以下操作:\n"
             "1. 应用所有已勾选的系统设置\n"
-            "2. 安装所有已勾选的应用\n\n"
+            "2. 执行所有已勾选的系统修复\n"
+            "3. KMS 激活 Windows\n\n"
             "确认继续？",
         )
         if reply != QMessageBox.StandardButton.Yes:
@@ -191,7 +192,10 @@ class MainWindow(QMainWindow):
         settings_page = self._tabs.widget(0)
         if hasattr(settings_page, "_run"):
             settings_page._run(skip_confirm=True)
-        # 触发应用安装页的执行
-        apps_page = self._tabs.widget(1)
-        if hasattr(apps_page, "_run"):
-            apps_page._run(skip_confirm=True)
+        # 触发系统修复页的执行
+        cleanup_page = self._tabs.widget(2)
+        if hasattr(cleanup_page, "_run_cleanup"):
+            cleanup_page._run_cleanup(skip_confirm=True)
+        # 触发 KMS 激活
+        if hasattr(cleanup_page, "_run_kms"):
+            cleanup_page._run_kms()

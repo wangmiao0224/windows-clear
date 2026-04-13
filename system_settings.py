@@ -902,10 +902,11 @@ def set_taskbar_alignment(alignment="left", callback=None):
     return s, msg
 
 
-def set_screen_timeout(minutes=15, callback=None):
-    """设置屏幕休眠超时时间（交流电 + 电池）"""
+def set_screen_timeout(minutes=0, callback=None):
+    """设置屏幕休眠超时时间（交流电 + 电池），0 表示永不息屏"""
+    label = "永不" if minutes == 0 else f"{minutes} 分钟"
     if callback:
-        callback(f"正在设置屏幕休眠时间为 {minutes} 分钟...")
+        callback(f"正在设置屏幕休眠时间为 {label}...")
     cmds = [
         f"powercfg /change monitor-timeout-ac {minutes}",
         f"powercfg /change monitor-timeout-dc {minutes}",
@@ -914,7 +915,7 @@ def set_screen_timeout(minutes=15, callback=None):
     for cmd in cmds:
         s, _ = _run_powershell(cmd)
         ok = ok and s
-    msg = f"屏幕休眠时间已设为 {minutes} 分钟" if ok else "设置失败"
+    msg = f"屏幕休眠时间已设为 {label}" if ok else "设置失败"
     if callback:
         callback(msg)
     return ok, msg

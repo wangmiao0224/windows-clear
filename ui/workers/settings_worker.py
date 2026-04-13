@@ -19,7 +19,7 @@ class SettingsWorker(BaseWorker):
                  primary_dns: str = "",
                  secondary_dns: str = "",
                  taskbar_alignment: str = "left",
-                 screen_timeout: int = 15,
+                 screen_timeout: int = 0,
                  computer_name: str = ""):
         super().__init__()
         self._keys = keys
