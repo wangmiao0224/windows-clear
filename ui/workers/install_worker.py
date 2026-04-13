@@ -6,7 +6,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from PySide6.QtCore import Signal
 from ui.workers.base_worker import BaseWorker
-from app_installer import install_app
+from app_installer import install_app, cleanup_downloads
 
 MAX_CONCURRENT = 3  # 最大并行下载数
 
@@ -92,4 +92,10 @@ class InstallWorker(BaseWorker):
             msg += f"  取消 {cancelled}"
         msg += " ══"
         self._log(msg)
+
+        # 自动清理下载目录
+        cleaned = cleanup_downloads()
+        if cleaned:
+            self._log(f"已清理下载临时文件（{cleaned} 个）")
+
         self.finished.emit(ok, fail)

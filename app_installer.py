@@ -263,3 +263,24 @@ def install_apps_batch(apps, callback=None, progress_callback=None):
         progress_callback(total, total)
 
     return success_count, fail_count, results
+
+
+def cleanup_downloads():
+    """清理下载临时目录，返回清理的文件数"""
+    d = _get_download_dir()
+    if not os.path.isdir(d):
+        return 0
+    count = 0
+    for f in os.listdir(d):
+        fp = os.path.join(d, f)
+        try:
+            if os.path.isfile(fp):
+                os.remove(fp)
+                count += 1
+        except Exception:
+            pass
+    try:
+        os.rmdir(d)
+    except Exception:
+        pass
+    return count

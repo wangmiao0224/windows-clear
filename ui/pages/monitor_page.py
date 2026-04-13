@@ -50,6 +50,8 @@ class MonitorPage(QWidget):
 
         self._gpu_card = InfoCard("GPU")
         self._gpu_card.add_row("型号:", "gpu_name")
+        self._gpu_card.add_row("分辨率:", "gpu_res")
+        self._gpu_card.add_row("刷新率:", "gpu_hz")
         self._gpu_card.add_row("温度:", "gpu_temp")
         self._gpu_card.add_row("占用:", "gpu_usage")
         self._gpu_card.add_row("显存:", "gpu_mem")
@@ -106,6 +108,8 @@ class MonitorPage(QWidget):
 
         gpu = info["gpu"]
         self._gpu_card.update_value("gpu_name", gpu["name"][:30])
+        self._gpu_card.update_value("gpu_res", gpu.get("resolution", "N/A"))
+        self._gpu_card.update_value("gpu_hz", gpu.get("refresh_rate", "N/A"))
         self._gpu_card.update_value("gpu_temp", gpu["temp"])
         self._gpu_card.update_value("gpu_usage", gpu["usage"])
         self._gpu_card.update_value("gpu_mem", f"{gpu['mem_used']} / {gpu['mem_total']}")

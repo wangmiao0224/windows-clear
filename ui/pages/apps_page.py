@@ -264,3 +264,5 @@ class AppsPage(QWidget):
         self._install_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
         self._log.set_finished(ok, fail)
+        from ui import notify
+        notify("应用安装完成", f"成功 {ok} 个，失败 {fail} 个")

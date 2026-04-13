@@ -92,8 +92,93 @@ def get_network_info():
     }
 
 
+def get_display_info():
+    """获取所有显示器的分辨率和刷新率"""
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
+
+        class DEVMODEW(ctypes.Structure):
+            _fields_ = [
+                ("dmDeviceName", ctypes.c_wchar * 32),
+                ("dmSpecVersion", ctypes.c_ushort),
+                ("dmDriverVersion", ctypes.c_ushort),
+                ("dmSize", ctypes.c_ushort),
+                ("dmDriverExtra", ctypes.c_ushort),
+                ("dmFields", ctypes.c_uint),
+                ("dmPositionX", ctypes.c_int),
+                ("dmPositionY", ctypes.c_int),
+                ("dmDisplayOrientation", ctypes.c_uint),
+                ("dmDisplayFixedOutput", ctypes.c_uint),
+                ("dmColor", ctypes.c_short),
+                ("dmDuplex", ctypes.c_short),
+                ("dmYResolution", ctypes.c_short),
+                ("dmTTOption", ctypes.c_short),
+                ("dmCollate", ctypes.c_short),
+                ("dmFormName", ctypes.c_wchar * 32),
+                ("dmLogPixels", ctypes.c_ushort),
+                ("dmBitsPerPel", ctypes.c_uint),
+                ("dmPelsWidth", ctypes.c_uint),
+                ("dmPelsHeight", ctypes.c_uint),
+                ("dmDisplayFlags", ctypes.c_uint),
+                ("dmDisplayFrequency", ctypes.c_uint),
+            ]
+
+        class DISPLAY_DEVICEW(ctypes.Structure):
+            _fields_ = [
+                ("cb", ctypes.c_ulong),
+                ("DeviceName", ctypes.c_wchar * 32),
+                ("DeviceString", ctypes.c_wchar * 128),
+                ("StateFlags", ctypes.c_ulong),
+                ("DeviceID", ctypes.c_wchar * 128),
+                ("DeviceKey", ctypes.c_wchar * 128),
+            ]
+
+        user32 = ctypes.windll.user32
+        monitors = []
+        i = 0
+        while True:
+            dd = DISPLAY_DEVICEW()
+            dd.cb = ctypes.sizeof(DISPLAY_DEVICEW)
+            if not user32.EnumDisplayDevicesW(None, i, ctypes.byref(dd), 0):
+                break
+            i += 1
+            # 只检测活动的显示器
+            if not (dd.StateFlags & 1):  # DISPLAY_DEVICE_ATTACHED_TO_DESKTOP
+                continue
+            dm = DEVMODEW()
+            dm.dmSize = ctypes.sizeof(DEVMODEW)
+            if user32.EnumDisplaySettingsW(dd.DeviceName, -1, ctypes.byref(dm)):
+                monitors.append({
+                    "name": dd.DeviceString.strip() or dd.DeviceName.strip(),
+                    "resolution": f"{dm.dmPelsWidth}×{dm.dmPelsHeight}",
+                    "refresh_rate": f"{dm.dmDisplayFrequency}Hz" if dm.dmDisplayFrequency > 0 else "N/A",
+                })
+
+        if monitors:
+            # 返回主显示器的信息用于简单显示，同时返回全部列表
+            res_parts = [m["resolution"] for m in monitors]
+            hz_parts = [m["refresh_rate"] for m in monitors]
+            res_str = " | ".join(res_parts) if len(res_parts) > 1 else res_parts[0]
+            hz_str = " | ".join(hz_parts) if len(hz_parts) > 1 else hz_parts[0]
+            return res_str, hz_str
+
+        # 回退到简单方式
+        w = user32.GetSystemMetrics(0)
+        h = user32.GetSystemMetrics(1)
+        dc = user32.GetDC(0)
+        gdi32 = ctypes.windll.gdi32
+        hz = gdi32.GetDeviceCaps(dc, 116)
+        user32.ReleaseDC(0, dc)
+        return f"{w}×{h}", f"{hz}Hz" if hz > 0 else "N/A"
+    except Exception:
+        return "N/A", "N/A"
+
+
 def get_gpu_info():
     """获取 GPU 信息"""
+    resolution, refresh = get_display_info()
+
     # 尝试 nvidia-smi
     try:
         result = subprocess.run(
@@ -111,6 +196,8 @@ def get_gpu_info():
                     "usage": f"{parts[2].strip()}%",
                     "mem_used": f"{parts[3].strip()} MB",
                     "mem_total": f"{parts[4].strip()} MB",
+                    "resolution": resolution,
+                    "refresh_rate": refresh,
                 }
     except Exception:
         pass
@@ -127,6 +214,8 @@ def get_gpu_info():
         "usage": "N/A",
         "mem_used": "N/A",
         "mem_total": f"{vram} MB" if vram else "N/A",
+        "resolution": resolution,
+        "refresh_rate": refresh,
     }
 
 

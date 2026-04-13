@@ -237,6 +237,8 @@ class CleanupPage(QWidget):
     def _on_cleanup_done(self, ok: int, fail: int):
         self._cleanup_btn.setEnabled(True)
         self._log.set_finished(ok, fail)
+        from ui import notify
+        notify("系统修复完成", f"成功 {ok} 项，失败 {fail} 项")
 
     # ── 垃圾应用 ──
 

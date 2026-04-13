@@ -38,16 +38,48 @@ def create_restore_point(description="桌面设置工具自动还原点", callba
 
 
 def _set_registry_value(hive, key_path, value_name, value, value_type=winreg.REG_DWORD):
-    """设置注册表值，如果键不存在则创建"""
+    """设置注册表值，如果键不存在则创建。winreg 失败时回退到 reg.exe"""
     try:
         key = winreg.CreateKeyEx(hive, key_path, 0, winreg.KEY_SET_VALUE)
         winreg.SetValueEx(key, value_name, 0, value_type, value)
         winreg.CloseKey(key)
         return True, f"已设置 {value_name} = {value}"
-    except PermissionError:
-        return False, f"权限不足，无法修改 {key_path}\\{value_name}（需要管理员权限）"
+    except (PermissionError, OSError):
+        # 回退：使用 reg.exe 命令行写入
+        return _set_registry_value_fallback(hive, key_path, value_name, value, value_type)
     except Exception as e:
         return False, f"设置 {value_name} 失败: {e}"
+
+
+def _set_registry_value_fallback(hive, key_path, value_name, value, value_type=winreg.REG_DWORD):
+    """使用 reg.exe 命令行写入注册表（回退方案）"""
+    hive_map = {
+        winreg.HKEY_CURRENT_USER: "HKCU",
+        winreg.HKEY_LOCAL_MACHINE: "HKLM",
+        winreg.HKEY_CLASSES_ROOT: "HKCR",
+    }
+    type_map = {
+        winreg.REG_DWORD: "REG_DWORD",
+        winreg.REG_SZ: "REG_SZ",
+        winreg.REG_EXPAND_SZ: "REG_EXPAND_SZ",
+    }
+    hive_str = hive_map.get(hive)
+    type_str = type_map.get(value_type)
+    if not hive_str or not type_str:
+        return False, f"权限不足，无法修改 {key_path}\\{value_name}（需要管理员权限）"
+    full_path = f"{hive_str}\\{key_path}"
+    try:
+        result = subprocess.run(
+            ["reg", "add", full_path, "/v", value_name, "/t", type_str,
+             "/d", str(value), "/f"],
+            capture_output=True, text=True, timeout=10,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        if result.returncode == 0:
+            return True, f"已设置 {value_name} = {value}"
+        return False, f"权限不足，无法修改 {key_path}\\{value_name}（需要管理员权限）"
+    except Exception:
+        return False, f"权限不足，无法修改 {key_path}\\{value_name}（需要管理员权限）"
 
 
 def _run_powershell(command):
@@ -252,55 +284,57 @@ def change_save_location(target_drive, folders=None, callback=None):
 
 
 def get_available_refresh_rates():
-    """获取当前显示器支持的刷新率列表"""
-    cmd = (
-        "Get-CimInstance -ClassName Win32_VideoController | "
-        "Select-Object -ExpandProperty CurrentRefreshRate; "
-        "(Get-CimInstance -Namespace root\\wmi -ClassName WmiMonitorBasicDisplayParams -ErrorAction SilentlyContinue) | "
-        "Select-Object -ExpandProperty Active"
-    )
+    """获取当前显示器在当前分辨率下支持的刷新率列表（ctypes 直接调用 Win32 API）"""
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
 
-    # 使用更可靠的方式获取刷新率
-    cmd2 = (
-        "$modes = @(); "
-        "Add-Type -TypeDefinition '"
-        'using System; using System.Runtime.InteropServices; '
-        'public class DisplayHelper { '
-        '[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Ansi)] '
-        'public struct DEVMODE { '
-        '[MarshalAs(UnmanagedType.ByValTStr, SizeConst=32)] public string dmDeviceName; '
-        'public short dmSpecVersion; public short dmDriverVersion; public short dmSize; '
-        'public short dmDriverExtra; public int dmFields; '
-        'public int dmPositionX; public int dmPositionY; '
-        'public int dmDisplayOrientation; public int dmDisplayFixedOutput; '
-        'public short dmColor; public short dmDuplex; public short dmYResolution; '
-        'public short dmTTOption; public short dmCollate; '
-        '[MarshalAs(UnmanagedType.ByValTStr, SizeConst=32)] public string dmFormName; '
-        'public short dmLogPixels; public int dmBitsPerPel; '
-        'public int dmPelsWidth; public int dmPelsHeight; '
-        'public int dmDisplayFlags; public int dmDisplayFrequency; '
-        '} '
-        '[DllImport("user32.dll")] '
-        'public static extern bool EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode); '
-        '}' "'; "
-        "$dm = New-Object DisplayHelper+DEVMODE; "
-        "$dm.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf($dm); "
-        "$i = 0; $rates = @(); "
-        "while([DisplayHelper]::EnumDisplaySettings($null, $i, [ref]$dm)) { "
-        "$rates += $dm.dmDisplayFrequency; $i++ }; "
-        "$rates | Sort-Object -Unique"
-    )
+        class DEVMODEW(ctypes.Structure):
+            _fields_ = [
+                ("dmDeviceName", ctypes.c_wchar * 32),
+                ("dmSpecVersion", ctypes.c_ushort),
+                ("dmDriverVersion", ctypes.c_ushort),
+                ("dmSize", ctypes.c_ushort),
+                ("dmDriverExtra", ctypes.c_ushort),
+                ("dmFields", ctypes.c_uint),
+                ("dmPositionX", ctypes.c_int),
+                ("dmPositionY", ctypes.c_int),
+                ("dmDisplayOrientation", ctypes.c_uint),
+                ("dmDisplayFixedOutput", ctypes.c_uint),
+                ("dmColor", ctypes.c_short),
+                ("dmDuplex", ctypes.c_short),
+                ("dmYResolution", ctypes.c_short),
+                ("dmTTOption", ctypes.c_short),
+                ("dmCollate", ctypes.c_short),
+                ("dmFormName", ctypes.c_wchar * 32),
+                ("dmLogPixels", ctypes.c_ushort),
+                ("dmBitsPerPel", ctypes.c_uint),
+                ("dmPelsWidth", ctypes.c_uint),
+                ("dmPelsHeight", ctypes.c_uint),
+                ("dmDisplayFlags", ctypes.c_uint),
+                ("dmDisplayFrequency", ctypes.c_uint),
+            ]
 
-    success, output = _run_powershell(cmd2)
-    if success and output:
-        rates = []
-        for line in output.strip().split("\n"):
-            line = line.strip()
-            if line.isdigit():
-                rate = int(line)
-                if rate > 0:
-                    rates.append(rate)
-        return sorted(set(rates))
+        user32 = ctypes.windll.user32
+        # 先获取当前分辨率
+        cur = DEVMODEW()
+        cur.dmSize = ctypes.sizeof(DEVMODEW)
+        user32.EnumDisplaySettingsW(None, -1, ctypes.byref(cur))  # ENUM_CURRENT_SETTINGS
+        cur_w, cur_h = cur.dmPelsWidth, cur.dmPelsHeight
+
+        # 枚举当前分辨率下所有刷新率
+        dm = DEVMODEW()
+        dm.dmSize = ctypes.sizeof(DEVMODEW)
+        rates = set()
+        i = 0
+        while user32.EnumDisplaySettingsW(None, i, ctypes.byref(dm)):
+            if dm.dmPelsWidth == cur_w and dm.dmPelsHeight == cur_h and dm.dmDisplayFrequency > 0:
+                rates.add(dm.dmDisplayFrequency)
+            i += 1
+        if rates:
+            return sorted(rates)
+    except Exception:
+        pass
 
     # 回退：返回常见刷新率
     return [60, 75, 120, 144, 165, 240]
@@ -644,7 +678,7 @@ def disable_background_apps(callback=None):
 
 
 def remove_bloatware(callback=None):
-    """卸载预装 UWP 应用 (bloatware)"""
+    """卸载预装 UWP 应用 (bloatware) — 批量并行"""
     bloatware = [
         "Microsoft.BingNews",
         "Microsoft.BingWeather",
@@ -672,19 +706,58 @@ def remove_bloatware(callback=None):
         "Microsoft.GamingApp",
     ]
 
-    removed = 0
-    for pkg in bloatware:
-        cmd = f'Get-AppxPackage -Name "{pkg}" | Remove-AppxPackage -ErrorAction SilentlyContinue'
-        s, _ = _run_powershell(cmd)
-        if s:
-            removed += 1
-            if callback:
-                callback(f"  已卸载 {pkg.split('.')[-1]}")
-        # 也删除预安装
-        _run_powershell(
-            f'Get-AppxProvisionedPackage -Online | Where-Object {{$_.DisplayName -eq "{pkg}"}} | '
-            f'Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue'
+    # 构建一次性批量卸载脚本（并行 Job）
+    names_str = ",".join(f'"{p}"' for p in bloatware)
+    ps_script = f"""
+$names = @({names_str})
+$jobs = @()
+foreach ($n in $names) {{
+    $jobs += Start-Job -ScriptBlock {{
+        param($pkg)
+        $removed = $false
+        $p = Get-AppxPackage -Name $pkg -ErrorAction SilentlyContinue
+        if ($p) {{
+            $p | Remove-AppxPackage -ErrorAction SilentlyContinue
+            $removed = $true
+        }}
+        Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue |
+            Where-Object {{ $_.DisplayName -eq $pkg }} |
+            Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+        [PSCustomObject]@{{ Name=$pkg; Removed=$removed }}
+    }} -ArgumentList $n
+}}
+$results = $jobs | Wait-Job -Timeout 120 | Receive-Job
+$jobs | Remove-Job -Force -ErrorAction SilentlyContinue
+foreach ($r in $results) {{
+    if ($r.Removed) {{ Write-Output "REMOVED:$($r.Name)" }}
+}}
+"""
+    if callback:
+        callback("正在批量卸载预装应用（并行处理）...")
+
+    # 并行卸载需要更长 timeout（默认 _run_powershell 仅 30s）
+    try:
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_script],
+            capture_output=True, text=True, timeout=180,
+            creationflags=subprocess.CREATE_NO_WINDOW
         )
+        s = result.returncode == 0
+        output = result.stdout.strip() or result.stderr.strip()
+    except subprocess.TimeoutExpired:
+        s, output = False, "批量卸载超时"
+    except Exception as e:
+        s, output = False, str(e)
+
+    removed = 0
+    if output:
+        for line in output.strip().splitlines():
+            line = line.strip()
+            if line.startswith("REMOVED:"):
+                pkg_name = line[8:]
+                removed += 1
+                if callback:
+                    callback(f"  已卸载 {pkg_name.split('.')[-1]}")
 
     msg = f"已卸载 {removed} 个预装应用"
     if callback:
@@ -739,20 +812,35 @@ def hide_taskbar_widgets(callback=None):
     """隐藏任务栏小组件面板"""
     results = []
 
-    # Win11 小组件
+    # Win11 小组件 —— 先尝试 HKCU，失败则用 HKLM 策略路径
     s, m = _set_registry_value(
         winreg.HKEY_CURRENT_USER,
         r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
         "TaskbarDa", 0)
+    if not s:
+        # Win11 24H2+ 可能锁定 HKCU，改用策略
+        s, m = _set_registry_value(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Policies\Microsoft\Dsh",
+            "AllowNewsAndInterests", 0)
+        if s:
+            m = "已通过策略禁用任务栏小组件"
     results.append((s, m))
     if callback:
         callback(m)
 
-    # Win10 资讯和兴趣
+    # Win10 资讯和兴趣 —— 先尝试 HKCU，失败则用 HKLM 策略路径
     s, m = _set_registry_value(
         winreg.HKEY_CURRENT_USER,
         r"SOFTWARE\Microsoft\Windows\CurrentVersion\Feeds",
         "ShellFeedsTaskbarViewMode", 2)
+    if not s:
+        s, m = _set_registry_value(
+            winreg.HKEY_LOCAL_MACHINE,
+            r"SOFTWARE\Policies\Microsoft\Windows\Windows Feeds",
+            "EnableFeeds", 0)
+        if s:
+            m = "已通过策略禁用资讯和兴趣"
     results.append((s, m))
     if callback:
         callback(m)

@@ -66,6 +66,10 @@ class SettingsPage(QWidget):
 
         # 执行按钮
         bot = QHBoxLayout()
+        reset_btn = QPushButton("  恢复默认")
+        reset_btn.setProperty("cssClass", "secondary")
+        reset_btn.clicked.connect(self._reset_defaults)
+        bot.addWidget(reset_btn)
         bot.addStretch()
         self._run_btn = QPushButton("  执行系统设置")
         self._run_btn.clicked.connect(self._run)
@@ -159,6 +163,33 @@ class SettingsPage(QWidget):
         row.addStretch()
         return row, cb
 
+    def _reset_defaults(self):
+        """恢复所有设置到默认值"""
+        # 常规设置全选
+        self._check_group.set_all(True)
+        # 高级设置全选 + 重置输入值
+        if hasattr(self, "_extra_checks"):
+            for cb in self._extra_checks.values():
+                cb.setChecked(True)
+        if hasattr(self, "_save_loc"):
+            self._save_loc.setText("D:\\")
+        if hasattr(self, "_folder_checks"):
+            for k, cb in self._folder_checks.items():
+                cb.setChecked(k != "Desktop")
+        if hasattr(self, "_rate_combo") and self._rate_combo.count() > 0:
+            self._rate_combo.setCurrentIndex(self._rate_combo.count() - 1)
+        if hasattr(self, "_dns1"):
+            self._dns1.setText("114.114.114.114")
+        if hasattr(self, "_dns2"):
+            self._dns2.setText("223.5.5.5")
+        if hasattr(self, "_taskbar_combo"):
+            self._taskbar_combo.setCurrentIndex(0)  # 居左
+        if hasattr(self, "_timeout_spin"):
+            self._timeout_spin.setValue(0)  # 永不
+        if hasattr(self, "_comp_name"):
+            import socket
+            self._comp_name.setText(socket.gethostname())
+
     def _browse_folder(self):
         d = QFileDialog.getExistingDirectory(self, "选择保存位置")
         if d:
@@ -214,3 +245,5 @@ class SettingsPage(QWidget):
     def _on_done(self, ok: int, fail: int):
         self._run_btn.setEnabled(True)
         self._log.set_finished(ok, fail)
+        from ui import notify
+        notify("系统设置完成", f"成功 {ok} 项，失败 {fail} 项")
